@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Color Code Converter</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      color: #222;
+    }
+
+    .header {
+      background: #1f2937;
+      color: white;
+      text-align: center;
+      padding: 32px 20px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .header p {
+      margin-top: 8px;
+      color: #d1d5db;
+    }
+
+    .container {
+      max-width: 950px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .converter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 10px;
+      padding: 24px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      font-size: 1.3rem;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    input:focus {
+      outline: 2px solid #94a3b8;
+      border-color: transparent;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 18px;
+      padding: 11px;
+      background: #334155;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1e293b;
+    }
+
+    .result {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f8fafc;
+      border-left: 4px solid #64748b;
+      border-radius: 4px;
+      min-height: 44px;
+    }
+
+    .error {
+      display: none;
+      margin-top: 12px;
+      padding: 10px;
+      background: #fef2f2;
+      color: #b91c1c;
+      border-radius: 4px;
+    }
+
+    .preview {
+      height: 24px;
+      margin-top: 12px;
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+    }
+
+    .rgb-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .rgb-row div {
+      width: 100%;
+    }
+
+    @media (max-width: 750px) {
+      .converter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .rgb-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="header">
+    <h1>Color Code Converter</h1>
+    <p>Convert between HEX and RGB color formats</p>
+  </header>
+
+  <main class="container">
+
+    <div class="converter-grid">
+
+      <!-- HEX TO RGB -->
+      <section class="panel">
+
+        <h2>HEX to RGB</h2>
+
+        <label for="hexInput">HEX value</label>
+
+        <input
+          type="text"
+          id="hexInput"
+          placeholder="Example: #FF5733"
+          maxlength="7"
+        >
+
+        <button id="hexToRgbBtn">
+          Convert to RGB
+        </button>
+
+        <div id="hexError" class="error"></div>
+
+        <div id="rgbResult" class="result">
+          RGB result will appear here
+        </div>
+
+        <div id="hexPreview" class="preview"></div>
+
+      </section>
+
+      <!-- RGB TO HEX -->
+      <section class="panel">
+
+        <h2>RGB to HEX</h2>
+
+        <div class="rgb-row">
+
+          <div>
+            <label for="rInput">Red</label>
+            <input
+              type="number"
+              id="rInput"
+              min="0"
+              max="255"
+              placeholder="0–255"
+            >
+          </div>
+
+          <div>
+            <label for="gInput">Green</label>
+            <input
+              type="number"
+              id="gInput"
+              min="0"
+              max="255"
+              placeholder="0–255"
+            >
+          </div>
+
+          <div>
+            <label for="bInput">Blue</label>
+            <input
+              type="number"
+              id="bInput"
+              min="0"
+              max="255"
+              placeholder="0–255"
+            >
+          </div>
+
+        </div>
+
+        <button id="rgbToHexBtn">
+          Convert to HEX
+        </button>
+
+        <div id="rgbError" class="error"></div>
+
+        <div id="hexResult" class="result">
+          HEX result will appear here
+        </div>
+
+        <div id="rgbPreview" class="preview"></div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <script>
+
+    function showError(elementId, message) {
+      const element = document.getElementById(elementId);
+      element.textContent = message;
+      element.style.display = "block";
+    }
+
+    function hideError(elementId) {
+      const element = document.getElementById(elementId);
+      element.textContent = "";
+      element.style.display = "none";
+    }
+
+    function isValidHex(hex) {
+      return /^#?[0-9A-Fa-f]{6}$/.test(hex);
+    }
+
+    function normalizeHex(hex) {
+      hex = hex.trim().toUpperCase();
+
+      if (!hex.startsWith("#")) {
+        hex = "#" + hex;
+      }
+
+      return hex;
+    }
+
+    function hexToRgb(hex) {
+      hex = normalizeHex(hex).substring(1);
+
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+
+      return { r, g, b };
+    }
+
+    function rgbToHex(r, g, b) {
+
+      function toHex(value) {
+        const hex = Number(value).toString(16).toUpperCase();
+
+        return hex.length === 1
+          ? "0" + hex
+          : hex;
+      }
+
+      return "#" + toHex(r) + toHex(g) + toHex(b);
+    }
+
+    // HEX TO RGB
+
+    document
+      .getElementById("hexToRgbBtn")
+      .addEventListener("click", function () {
+
+        hideError("hexError");
+
+        const input =
+          document.getElementById("hexInput").value.trim();
+
+        if (!input) {
+
+          showError(
+            "hexError",
+            "Please enter a HEX value."
+          );
+
+          document.getElementById("rgbResult").textContent =
+            "RGB result will appear here";
+
+          document.getElementById("hexPreview").style.background =
+            "transparent";
+
+          return;
+        }
+
+        if (!isValidHex(input)) {
+
+          showError(
+            "hexError",
+            "Invalid HEX value. Use six hexadecimal digits."
+          );
+
+          document.getElementById("rgbResult").textContent =
+            "RGB result will appear here";
+
+          document.getElementById("hexPreview").style.background =
+            "transparent";
+
+          return;
+        }
+
+        const rgb = hexToRgb(input);
+
+        document.getElementById("rgbResult").textContent =
+          `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+
+        document.getElementById("hexPreview").style.background =
+          normalizeHex(input);
+      });
+
+
+    // RGB TO HEX
+
+    document
+      .getElementById("rgbToHexBtn")
+      .addEventListener("click", function () {
+
+        hideError("rgbError");
+
+        const r = document.getElementById("rInput").value;
+        const g = document.getElementById("gInput").value;
+        const b = document.getElementById("bInput").value;
+
+        if (r === "" || g === "" || b === "") {
+
+          showError(
+            "rgbError",
+            "Please enter all three RGB values."
+          );
+
+          document.getElementById("hexResult").textContent =
+            "HEX result will appear here";
+
+          document.getElementById("rgbPreview").style.background =
+            "transparent";
+
+          return;
+        }
+
+        const rNum = Number(r);
+        const gNum = Number(g);
+        const bNum = Number(b);
+
+        if (
+          !Number.isInteger(rNum) ||
+          !Number.isInteger(gNum) ||
+          !Number.isInteger(bNum) ||
+          rNum < 0 ||
+          rNum > 255 ||
+          gNum < 0 ||
+          gNum > 255 ||
+          bNum < 0 ||
+          bNum > 255
+        ) {
+
+          showError(
+            "rgbError",
+            "RGB values must be whole numbers from 0 to 255."
+          );
+
+          document.getElementById("hexResult").textContent =
+            "HEX result will appear here";
+
+          document.getElementById("rgbPreview").style.background =
+            "transparent";
+
+          return;
+        }
+
+        const hex = rgbToHex(rNum, gNum, bNum);
+
+        document.getElementById("hexResult").textContent = hex;
+
+        document.getElementById("rgbPreview").style.background = hex;
+      });
+
+  </script>
+
+</body>
+</html>
